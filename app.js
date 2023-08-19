@@ -1,11 +1,17 @@
 import express from 'express'
+import dotenv from 'dotenv'
+
 import usuarioRoutes from './routes/usuarioRoutes.js'
+
+import conectarDB from './config/db.js'
+dotenv.config()
+conectarDB()
 
 const app = express()
 
 app.use('/api/usuarios', usuarioRoutes)
 
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`)
 })
