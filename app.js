@@ -9,6 +9,9 @@ conectarDB()
 
 const app = express()
 
+app.use(express.json())
+
+//* Routing
 app.use('/api/usuarios', usuarioRoutes)
 
 const PORT = process.env.PORT || 3000

@@ -1,11 +1,11 @@
 import express from 'express'
 
 import {
-  getUsuarios
+  registrarUsuario
 } from '../controllers/usuarioControllers.js'
 
 const router = express.Router()
 
-router.get('/', getUsuarios)
+router.post('/', registrarUsuario)
 
 export default router
