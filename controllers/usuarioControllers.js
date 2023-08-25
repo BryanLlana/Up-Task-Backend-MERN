@@ -126,8 +126,47 @@ const confirmarCuenta = async (req = request, res = response) => {
   }
 }
 
+const olvidePassword = async (req = request, res = response) => {
+  await check('email').trim().notEmpty().withMessage('El email es obligatorio').run(req)
+
+  const errores = validationResult(req).errors.map(error => error.msg)
+
+  if (errores.length) {
+    const error = new Error('Hubo errores en los campos')
+    return res.status(403).json({
+      mensaje: error.message,
+      errores
+    })
+  }
+
+  const { email } = req.body
+  const usuarioObtenido = await Usuario.findOne({ email })
+
+  if (!usuarioObtenido) {
+    const error = new Error('Email no válido')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  try {
+    usuarioObtenido.token = generarToken()
+    await usuarioObtenido.save()
+
+    return res.status(200).json({
+      mensaje: 'Hemos enviado las instrucciones a tu email'
+    })
+  } catch (err) {
+    const error = new Error('Hubo un error en el servidor')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+}
+
 export {
   registrarUsuario,
   autenticar,
-  confirmarCuenta
+  confirmarCuenta,
+  olvidePassword
 }
