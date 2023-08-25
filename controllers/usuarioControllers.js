@@ -187,10 +187,51 @@ const comprobarToken = async (req = request, res = response) => {
   }
 }
 
+const modificarPassword = async (req = request, res = response) => {
+  const { token } = req.params
+  const usuarioObtenido = await Usuario.findOne({ token })
+
+  if (!usuarioObtenido) {
+    const error = new Error('Token no válido')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  await check('password').trim().isLength({ min: 6 }).withMessage('El password debe tener mas de 6 caracteres').run(req)
+
+  const errores = validationResult(req).errors.map(error => error.msg)
+
+  if (errores.length) {
+    const error = new Error('Hubo un error en el campo')
+    return res.status(403).json({
+      mensaje: error.message,
+      errores
+    })
+  }
+
+  const { password } = req.body
+
+  try {
+    usuarioObtenido.password = password
+    usuarioObtenido.token = ''
+    await usuarioObtenido.save()
+    return res.status(200).json({
+      mensaje: 'Password modificado correctamente'
+    })
+  } catch (err) {
+    const error = new Error('Hubo un error en el servidor')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+}
+
 export {
   registrarUsuario,
   autenticar,
   confirmarCuenta,
   olvidePassword,
-  comprobarToken
+  comprobarToken,
+  modificarPassword
 }
