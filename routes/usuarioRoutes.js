@@ -6,8 +6,10 @@ import {
   confirmarCuenta,
   modificarPassword,
   olvidePassword,
+  perfil,
   registrarUsuario
 } from '../controllers/usuarioControllers.js'
+import verificarAutenticacion from '../middlewares/verificarAutenticacion.js'
 
 const router = express.Router()
 
@@ -17,5 +19,7 @@ router.get('/confirmar/:token', confirmarCuenta)
 router.post('/olvide-password', olvidePassword)
 router.get('/olvide-password/:token', comprobarToken)
 router.post('/olvide-password/:token', modificarPassword)
+
+router.get('/perfil', verificarAutenticacion, perfil)
 
 export default router

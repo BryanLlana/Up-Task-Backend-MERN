@@ -227,11 +227,16 @@ const modificarPassword = async (req = request, res = response) => {
   }
 }
 
+const perfil = (req = request, res = response) => {
+  return res.status(200).json(req.usuario)
+}
+
 export {
   registrarUsuario,
   autenticar,
   confirmarCuenta,
   olvidePassword,
   comprobarToken,
-  modificarPassword
+  modificarPassword,
+  perfil
 }
