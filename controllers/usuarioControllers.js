@@ -99,7 +99,35 @@ const autenticar = async (req = request, res = response) => {
   })
 }
 
+const confirmarCuenta = async (req = request, res = response) => {
+  const { token } = req.params
+  const usuarioObtenido = await Usuario.findOne({ token })
+
+  if (!usuarioObtenido) {
+    const error = new Error('Token no válido')
+    return res.status(403).json({
+      mensaje: error.message
+    })
+  }
+
+  try {
+    usuarioObtenido.token = ''
+    usuarioObtenido.confirmado = true
+    await usuarioObtenido.save()
+
+    return res.status(200).json({
+      mensaje: 'Cuenta confirmada correctamente'
+    })
+  } catch (err) {
+    const error = new Error('Hubo un error en el servidor')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+}
+
 export {
   registrarUsuario,
-  autenticar
+  autenticar,
+  confirmarCuenta
 }
