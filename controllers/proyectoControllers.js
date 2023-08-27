@@ -2,6 +2,7 @@ import { request, response } from 'express'
 import { check, validationResult } from 'express-validator'
 
 import Proyecto from '../models/Proyecto.js'
+import Tarea from '../models/Tarea.js'
 
 const nuevoProyecto = async (req = request, res = response) => {
   await check('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').run(req)
@@ -72,9 +73,13 @@ const obtenerProyecto = async (req = request, res = response) => {
     })
   }
 
+  //* Obtener las tareas del proyecto
+  const tareas = await Tarea.find().where('proyecto').equals(_id)
+
   return res.status(200).json({
     mensaje: 'Proyecto encontrado',
-    proyecto: proyectoObtenido
+    proyecto: proyectoObtenido,
+    tareas
   })
 }
 
