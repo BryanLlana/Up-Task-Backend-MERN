@@ -53,6 +53,32 @@ const nuevaTarea = async (req = request, res = response) => {
   }
 }
 
+const obtenerTarea = async (req = request, res = response) => {
+  const { id: _id } = req.params
+
+  const tareaObtenida = await Tarea.findOne({ _id }).populate('proyecto')
+
+  if (!tareaObtenida) {
+    const error = new Error('Tarea inexistente')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  if (tareaObtenida.proyecto.creador.toString() !== req.usuario._id.toString()) {
+    const error = new Error('Permiso denegado')
+    return res.status(403).json({
+      mensaje: error.message
+    })
+  }
+
+  return res.status(200).json({
+    mensaje: 'Tarea encontrada',
+    tarea: tareaObtenida
+  })
+}
+
 export {
-  nuevaTarea
+  nuevaTarea,
+  obtenerTarea
 }
