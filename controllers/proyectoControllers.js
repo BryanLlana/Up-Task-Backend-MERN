@@ -139,9 +139,51 @@ const actualizarProyecto = async (req = request, res = response) => {
   }
 }
 
+const eliminarProyecto = async (req = request, res = response) => {
+  const { id: _id } = req.params
+
+  let proyectoObtenido = ''
+  try {
+    proyectoObtenido = await Proyecto.findOne({ _id })
+  } catch (err) {
+    const error = new Error('Id no válida')
+    return res.status(403).json({
+      mensaje: error.message
+    })
+  }
+
+  if (!proyectoObtenido) {
+    const error = new Error('Proyecto inexistente')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  if (req.usuario._id.toString() !== proyectoObtenido.creador.toString()) {
+    const error = new Error('Acceso denegado')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+
+  try {
+    const proyectoEliminado = await proyectoObtenido.deleteOne()
+    return res.status(200).json({
+      mensaje: 'Proyecto eliminado correctamente',
+      proyecto: proyectoEliminado
+    })
+  } catch (err) {
+    const error = new Error('Hubo un error en el servidor')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+}
+
 export {
   nuevoProyecto,
   obtenerProyectos,
   obtenerProyecto,
-  actualizarProyecto
+  actualizarProyecto,
+  eliminarProyecto
 }

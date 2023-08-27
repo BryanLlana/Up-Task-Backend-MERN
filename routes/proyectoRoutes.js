@@ -2,6 +2,7 @@ import express from 'express'
 
 import {
   actualizarProyecto,
+  eliminarProyecto,
   nuevoProyecto,
   obtenerProyecto,
   obtenerProyectos
@@ -14,5 +15,6 @@ router.post('/', verificarAutenticacion, nuevoProyecto)
 router.get('/', verificarAutenticacion, obtenerProyectos)
 router.get('/:id', verificarAutenticacion, obtenerProyecto)
 router.put('/:id', verificarAutenticacion, actualizarProyecto)
+router.delete('/:id', verificarAutenticacion, eliminarProyecto)
 
 export default router
