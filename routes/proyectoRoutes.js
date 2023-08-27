@@ -1,6 +1,7 @@
 import express from 'express'
 
 import {
+  actualizarProyecto,
   nuevoProyecto,
   obtenerProyecto,
   obtenerProyectos
@@ -12,5 +13,6 @@ const router = express.Router()
 router.post('/', verificarAutenticacion, nuevoProyecto)
 router.get('/', verificarAutenticacion, obtenerProyectos)
 router.get('/:id', verificarAutenticacion, obtenerProyecto)
+router.put('/:id', verificarAutenticacion, actualizarProyecto)
 
 export default router
