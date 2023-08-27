@@ -132,8 +132,42 @@ const actualizarTarea = async (req = request, res = response) => {
   }
 }
 
+const eliminarTarea = async (req = request, res = response) => {
+  const { id: _id } = req.params
+
+  const tareaObtenida = await Tarea.findOne({ _id }).populate('proyecto')
+
+  if (!tareaObtenida) {
+    const error = new Error('Tarea inexistente')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  if (tareaObtenida.proyecto.creador.toString() !== req.usuario._id.toString()) {
+    const error = new Error('Permiso denegado')
+    return res.status(403).json({
+      mensaje: error.message
+    })
+  }
+
+  try {
+    const tareaEliminada = await tareaObtenida.deleteOne()
+    return res.status(200).json({
+      mensaje: 'Tarea eliminada correctamente',
+      tarea: tareaEliminada
+    })
+  } catch (err) {
+    const error = new Error('Hubo un error en el servidor')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+}
+
 export {
   nuevaTarea,
   obtenerTarea,
-  actualizarTarea
+  actualizarTarea,
+  eliminarTarea
 }
