@@ -35,6 +35,50 @@ const nuevoProyecto = async (req = request, res = response) => {
   }
 }
 
+const obtenerProyectos = async (req = request, res = response) => {
+  const proyectos = await Proyecto.find().where('creador').equals(req.usuario._id)
+
+  return res.status(200).json({
+    mensaje: 'Proyectos encontrados',
+    proyectos
+  })
+}
+
+const obtenerProyecto = async (req = request, res = response) => {
+  const { id: _id } = req.params
+
+  let proyectoObtenido = ''
+  try {
+    proyectoObtenido = await Proyecto.findOne({ _id })
+  } catch (err) {
+    const error = new Error('Id no válida')
+    return res.status(403).json({
+      mensaje: error.message
+    })
+  }
+
+  if (!proyectoObtenido) {
+    const error = new Error('Proyecto inexistente')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  if (req.usuario._id.toString() !== proyectoObtenido.creador.toString()) {
+    const error = new Error('Acceso denegado')
+    return res.status(400).json({
+      mensaje: error.message
+    })
+  }
+
+  return res.status(200).json({
+    mensaje: 'Proyecto encontrado',
+    proyecto: proyectoObtenido
+  })
+}
+
 export {
-  nuevoProyecto
+  nuevoProyecto,
+  obtenerProyectos,
+  obtenerProyecto
 }
