@@ -39,7 +39,7 @@ const registrarUsuario = async (req = request, res = response) => {
     usuario.token = generarToken()
     const usuarioAlmacenado = await usuario.save()
     return res.status(200).json({
-      mensaje: 'Usuario registrado correctamente',
+      mensaje: 'Usuario registrado correctamente, revisa tu email para confirmar tu cuenta',
       usuario: usuarioAlmacenado
     })
   } catch (err) {

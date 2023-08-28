@@ -1,5 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
+import cors from 'cors'
 
 import usuarioRoutes from './routes/usuarioRoutes.js'
 import proyectoRoutes from './routes/proyectoRoutes.js'
@@ -12,6 +13,20 @@ conectarDB()
 const app = express()
 
 app.use(express.json())
+
+//* Configurar cors
+/* const whiteList = [process.env.FRONTEND_URL]
+const corsOption = {
+  origin: function (origin, callback) {
+    if (whiteList.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Error de cors'))
+    }
+  }
+} */
+
+app.use(cors(/* corsOption */))
 
 //* Routing
 app.use('/api/usuarios', usuarioRoutes)
