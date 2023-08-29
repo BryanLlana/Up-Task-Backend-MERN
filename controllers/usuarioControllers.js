@@ -4,7 +4,7 @@ import { check, validationResult } from 'express-validator'
 import Usuario from '../models/Usuario.js'
 import generarToken from '../helpers/generarToken.js'
 import generarJwt from '../helpers/generarJwt.js'
-import { emailRegistro } from '../helpers/email.js'
+import { emailOlvidePassword, emailRegistro } from '../helpers/email.js'
 
 const registrarUsuario = async (req = request, res = response) => {
   await check('nombre').trim().notEmpty().withMessage('El nombre no puede estar vacío').run(req)
@@ -160,6 +160,12 @@ const olvidePassword = async (req = request, res = response) => {
   try {
     usuarioObtenido.token = generarToken()
     await usuarioObtenido.save()
+
+    emailOlvidePassword({
+      nombre: usuarioObtenido.nombre,
+      email: usuarioObtenido.email,
+      token: usuarioObtenido.token
+    })
 
     return res.status(200).json({
       mensaje: 'Hemos enviado las instrucciones a tu email'
