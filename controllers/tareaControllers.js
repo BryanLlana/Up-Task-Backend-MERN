@@ -41,6 +41,11 @@ const nuevaTarea = async (req = request, res = response) => {
 
   try {
     const tareaAlmacenada = await Tarea.create(req.body)
+
+    //* Almacenar id tarea en modelo proyecto
+    proyectoObtenido.tareas = [...proyectoObtenido.tareas, tareaAlmacenada._id]
+    await proyectoObtenido.save()
+
     return res.status(200).json({
       mensaje: 'Tarea creada correctamente',
       tarea: tareaAlmacenada
