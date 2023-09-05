@@ -2,6 +2,7 @@ import { request, response } from 'express'
 import { check, validationResult } from 'express-validator'
 
 import Proyecto from '../models/Proyecto.js'
+import Usuario from '../models/Usuario.js'
 
 const nuevoProyecto = async (req = request, res = response) => {
   await check('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').run(req)
@@ -37,7 +38,7 @@ const nuevoProyecto = async (req = request, res = response) => {
 }
 
 const obtenerProyectos = async (req = request, res = response) => {
-  const proyectos = await Proyecto.find().where('creador').equals(req.usuario._id)
+  const proyectos = await Proyecto.find().where('creador').equals(req.usuario._id).select('-tareas')
 
   return res.status(200).json({
     mensaje: 'Proyectos encontrados',
@@ -50,7 +51,7 @@ const obtenerProyecto = async (req = request, res = response) => {
 
   let proyectoObtenido = ''
   try {
-    proyectoObtenido = await Proyecto.findOne({ _id })
+    proyectoObtenido = await Proyecto.findOne({ _id }).populate('tareas')
   } catch (err) {
     const error = new Error('Id no válida')
     return res.status(403).json({
@@ -180,10 +181,41 @@ const eliminarProyecto = async (req = request, res = response) => {
   }
 }
 
+const buscarColaborador = async (req = request, res = response) => {
+  await check('email').trim().isEmail().withMessage('El email no es válido').run(req)
+
+  const errores = validationResult(req).errors.map(error => error.msg)
+
+  if (errores.length) {
+    const error = new Error('Hubo errores en los campos')
+    return res.status(400).json({
+      mensaje: error.message,
+      errores
+    })
+  }
+
+  const { email } = req.body
+
+  const usuarioObtenido = await Usuario.findOne({ email }).select('-confirmado -createdAt -password -token -updatedAt -__v')
+
+  if (!usuarioObtenido) {
+    const error = new Error('El email no existe')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  return res.status(200).json({
+    mensaje: 'Usuario encontrado',
+    usuario: usuarioObtenido
+  })
+}
+
 export {
   nuevoProyecto,
   obtenerProyectos,
   obtenerProyecto,
   actualizarProyecto,
-  eliminarProyecto
+  eliminarProyecto,
+  buscarColaborador
 }
