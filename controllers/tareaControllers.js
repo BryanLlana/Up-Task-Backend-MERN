@@ -156,8 +156,15 @@ const eliminarTarea = async (req = request, res = response) => {
     })
   }
 
+  const proyectoObtenido = await Proyecto.findOne({ _id: tareaObtenida.proyecto._id })
+
   try {
     const tareaEliminada = await tareaObtenida.deleteOne()
+
+    //* Eliminar id tarea en modelo proyecto
+    proyectoObtenido.tareas = proyectoObtenido.tareas.filter(tarea => tarea._id.toString() !== tareaObtenida._id.toString())
+    await proyectoObtenido.save()
+
     return res.status(200).json({
       mensaje: 'Tarea eliminada correctamente',
       tarea: tareaEliminada

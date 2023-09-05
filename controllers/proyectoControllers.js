@@ -3,6 +3,7 @@ import { check, validationResult } from 'express-validator'
 
 import Proyecto from '../models/Proyecto.js'
 import Usuario from '../models/Usuario.js'
+import Tarea from '../models/Tarea.js'
 
 const nuevoProyecto = async (req = request, res = response) => {
   await check('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').run(req)
@@ -169,6 +170,13 @@ const eliminarProyecto = async (req = request, res = response) => {
 
   try {
     const proyectoEliminado = await proyectoObtenido.deleteOne()
+
+    //* Eliminar tareas que tengan este proyecto
+    proyectoEliminado.tareas?.forEach(async tarea => {
+      const tareaObtenida = await Tarea.findOne({ _id: tarea._id })
+      await tareaObtenida.deleteOne()
+    })
+
     return res.status(200).json({
       mensaje: 'Proyecto eliminado correctamente',
       proyecto: proyectoEliminado
@@ -211,11 +219,77 @@ const buscarColaborador = async (req = request, res = response) => {
   })
 }
 
+const agregarColaborador = async (req = request, res = response) => {
+  await check('email').trim().isEmail().withMessage('Email no válido').run(req)
+
+  const errores = validationResult(req).errors.map(error => error.msg)
+
+  if (errores.length) {
+    const error = new Error('Hubo errores en los campos')
+    return res.status(400).json({
+      mensaje: error.message,
+      errores
+    })
+  }
+
+  const { id: _id } = req.params
+  const proyectoObtenido = await Proyecto.findOne({ _id })
+
+  if (!proyectoObtenido) {
+    const error = new Error('Proyecto no encontrado')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  if (proyectoObtenido.creador.toString() !== req.usuario._id.toString()) {
+    const error = new Error('Acción no válida')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  const { email } = req.body
+
+  const usuarioObtenido = await Usuario.findOne({ email }).select('-confirmado -createdAt -password -token -updatedAt -__v')
+
+  if (!usuarioObtenido) {
+    const error = new Error('El email no existe')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  //* El colaborador no es el admin del proyecto
+  if (proyectoObtenido.creador.toString() === usuarioObtenido._id.toString()) {
+    const error = new Error('El creador del proyecto no puede ser colaborador')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  //* Revisar que no este agregado
+  if (proyectoObtenido.colaboradores.includes(usuarioObtenido._id)) {
+    const error = new Error('El usuario ya pertenece al proyecto')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  proyectoObtenido.colaboradores = [...proyectoObtenido.colaboradores, usuarioObtenido._id]
+  await proyectoObtenido.save()
+
+  return res.status(200).json({
+    mensaje: 'Colaborador agregado correctamente'
+  })
+}
+
 export {
   nuevoProyecto,
   obtenerProyectos,
   obtenerProyecto,
   actualizarProyecto,
   eliminarProyecto,
-  buscarColaborador
+  buscarColaborador,
+  agregarColaborador
 }
