@@ -52,7 +52,7 @@ const obtenerProyecto = async (req = request, res = response) => {
 
   let proyectoObtenido = ''
   try {
-    proyectoObtenido = await Proyecto.findOne({ _id }).populate('tareas')
+    proyectoObtenido = await Proyecto.findOne({ _id }).populate('tareas').populate('colaboradores', 'nombre email')
   } catch (err) {
     const error = new Error('Id no válida')
     return res.status(403).json({
@@ -284,6 +284,44 @@ const agregarColaborador = async (req = request, res = response) => {
   })
 }
 
+const eliminarColaborador = async (req = request, res = response) => {
+  await check('id').trim().notEmpty().withMessage('El id es obligatorio').run(req)
+
+  const errores = validationResult(req).errors.map(error => error.msg)
+
+  if (errores.length) {
+    const error = new Error('Hubo errores en los campos')
+    return res.status(400).json({
+      mensaje: error.message,
+      errores
+    })
+  }
+
+  const { id: _id } = req.params
+  const proyectoObtenido = await Proyecto.findOne({ _id })
+
+  if (!proyectoObtenido) {
+    const error = new Error('Proyecto no encontrado')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  if (proyectoObtenido.creador.toString() !== req.usuario._id.toString()) {
+    const error = new Error('Acción no válida')
+    return res.status(404).json({
+      mensaje: error.message
+    })
+  }
+
+  proyectoObtenido.colaboradores = proyectoObtenido.colaboradores.filter(colaborador => colaborador._id.toString() !== req.body.id)
+
+  await proyectoObtenido.save()
+  return res.status(200).json({
+    mensaje: 'Colaborador eliminado correctamente'
+  })
+}
+
 export {
   nuevoProyecto,
   obtenerProyectos,
@@ -291,5 +329,6 @@ export {
   actualizarProyecto,
   eliminarProyecto,
   buscarColaborador,
-  agregarColaborador
+  agregarColaborador,
+  eliminarColaborador
 }
