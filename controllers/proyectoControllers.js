@@ -57,7 +57,9 @@ const obtenerProyecto = async (req = request, res = response) => {
 
   let proyectoObtenido = ''
   try {
-    proyectoObtenido = await Proyecto.findOne({ _id }).populate('tareas').populate('colaboradores', 'nombre email')
+    proyectoObtenido = await Proyecto.findOne({ _id }).populate({
+      path: 'tareas', populate: { path: 'completado' }
+    }).populate('colaboradores', 'nombre email')
   } catch (err) {
     const error = new Error('Id no válida')
     return res.status(403).json({

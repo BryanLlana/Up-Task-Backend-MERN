@@ -197,10 +197,13 @@ const cambiarEstado = async (req = request, res = response) => {
   }
 
   tareaObtenida.estado = !tareaObtenida.estado
+  tareaObtenida.completado = req.usuario._id
   await tareaObtenida.save()
 
+  const tareaModificada = await Tarea.findOne({ _id }).populate('proyecto').populate('completado')
+
   return res.status(200).json({
-    tarea: tareaObtenida
+    tarea: tareaModificada
   })
 }
 
