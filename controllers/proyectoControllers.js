@@ -39,7 +39,12 @@ const nuevoProyecto = async (req = request, res = response) => {
 }
 
 const obtenerProyectos = async (req = request, res = response) => {
-  const proyectos = await Proyecto.find().where('creador').equals(req.usuario._id).select('-tareas')
+  const proyectos = await Proyecto.find({
+    $or: [
+      { colaboradores: { $in: req.usuario._id } },
+      { creador: { $in: req.usuario._id } }
+    ]
+  }).select('-tareas')
 
   return res.status(200).json({
     mensaje: 'Proyectos encontrados',
@@ -67,7 +72,7 @@ const obtenerProyecto = async (req = request, res = response) => {
     })
   }
 
-  if (req.usuario._id.toString() !== proyectoObtenido.creador.toString()) {
+  if (req.usuario._id.toString() !== proyectoObtenido.creador.toString() && !proyectoObtenido.colaboradores.some(colaborador => colaborador._id.toString() === req.usuario._id.toString())) {
     const error = new Error('Acceso denegado')
     return res.status(400).json({
       mensaje: error.message

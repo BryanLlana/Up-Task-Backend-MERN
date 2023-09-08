@@ -2,6 +2,7 @@ import express from 'express'
 
 import {
   actualizarTarea,
+  cambiarEstado,
   eliminarTarea,
   nuevaTarea,
   obtenerTarea
@@ -14,5 +15,6 @@ router.post('/', verificarAutenticacion, nuevaTarea)
 router.get('/:id', verificarAutenticacion, obtenerTarea)
 router.put('/:id', verificarAutenticacion, actualizarTarea)
 router.delete('/:id', verificarAutenticacion, eliminarTarea)
+router.post('/estado/:id', verificarAutenticacion, cambiarEstado)
 
 export default router
